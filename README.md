@@ -17,6 +17,9 @@ Each lab takes about 2 hours: about 1.5 h in the lab session, then the rest at h
 **small functions** (5–15 lines each, marked `TODO`). Everything else is already written and
 explained in comments, so you can read it.
 
+**Start with the video guide** (12 minutes, English and Arabic) on the course page. It shows the
+whole lab once, with real runs.
+
 ---
 
 ## 1. Install (once, 10–40 minutes)
