@@ -38,8 +38,6 @@ Test them without the simulator:   ./lab check 1
 
 import math
 
-import rclpy
-
 from ee414_house_lab.easy_robot import EasyRobot, init, run
 
 

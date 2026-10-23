@@ -196,7 +196,7 @@ class Monitor(Node):
                 f'goal (odom)          ({self.goal[0]:.2f}, {self.goal[1]:.2f})',
                 f'goal reached         {"YES" if self.goal_time is not None else "NO"}'
                 '   (judged by where the robot really is)',
-                f'time to goal         '
+                'time to goal         '
                 + (f'{self.goal_time:.1f} s' if self.goal_time is not None else '-'),
                 f'final error          {true_err:.3f} m   (true position to the goal)',
                 f'final error by /odom {odom_err:.3f} m   (what the robot believes)',
