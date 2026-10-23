@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+build/
+install/
+log/
+frames_*.pdf
+frames_*.gv
+# your monitor results stay on your computer (they go in the zip, not in git)
+submission/lab*/lab*_run_*
+submission/lab*/lab*_check_*

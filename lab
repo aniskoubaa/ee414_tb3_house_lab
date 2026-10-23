@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# EE 414 House Lab -- one command for everything.  Run ./lab help
+set -o pipefail   # (no -u: ROS setup.bash reads unset variables)
+LAB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+PKG=ee414_house_lab
+
+usage() {
+  cat <<'HELP'
+
+  EE 414 House Lab -- the commands you need
+
+    ./lab sim              start Gazebo with the robot in the house
+    ./lab sim nogui        ... without the Gazebo window (faster on a weak PC)
+    ./lab sim rviz         ... and open RViz too
+    ./lab teleop           drive the robot with the keyboard (w a s d x)
+    ./lab rviz             open RViz with the lab layout
+    ./lab stop             stop everything the lab started
+
+    ./lab check 1          test your Lab 1 code WITHOUT the simulator (also 2, 3)
+    ./lab run <program>    run a lab program, e.g.  ./lab run l1_wander
+    ./lab monitor 1        measure a run for your report (see the lab guide)
+
+    ./lab build            rebuild (only needed if you ADD a new program)
+    ./lab doctor           check that everything is installed and working
+    ./lab submit 1 <ID>    pack your Lab 1 submission into a zip file
+
+HELP
+}
+
+# A clean environment for Gazebo. Each line below fixed a real failure:
+#  - conda / snap (VS Code) variables load the wrong libraries into Gazebo
+#  - stale workspaces in AMENT_PREFIX_PATH hide or break packages
+#  - Wayland: Gazebo's window often stays blank -> use X11 (xcb)
+#  - laptops with an NVIDIA card: render on it, not on the Intel chip
+clean_env() {
+  local v
+  for v in $(env | cut -d= -f1 | grep -E '^(AMENT_|COLCON_|CMAKE_PREFIX_PATH|PYTHONPATH|LD_LIBRARY_PATH|CONDA|ROS_DISTRO|ROS_VERSION|ROS_PYTHON_VERSION|GZ_SIM_RESOURCE_PATH|GTK_PATH|GTK_EXE_PREFIX|GIO_MODULE_DIR|LOCPATH|GSETTINGS_SCHEMA_DIR)'); do
+    unset "$v"
+  done
+  export PATH="$(echo "$PATH" | tr ':' '\n' | grep -v -E 'conda|anaconda|miniforge|/snap/' | paste -sd: -)"
+  # shellcheck disable=SC1091
+  source "$LAB_DIR/scripts/lab_env.sh"
+  if [[ "${XDG_SESSION_TYPE:-}" == "wayland" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+    export QT_QPA_PLATFORM=xcb
+  fi
+  if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L 2>/dev/null | grep -q GPU; then
+    export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+  fi
+}
+
+need_build() {
+  if [ ! -f "$EE414_WS/install/$PKG/share/$PKG/package.xml" ]; then
+    echo "  The lab is not built yet. Run:  ./install.sh   (or ./lab build)"
+    exit 1
+  fi
+}
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  sim)
+    clean_env; need_build
+    gui=true; rviz=false
+    for a in "$@"; do
+      case "$a" in nogui|headless) gui=false ;; rviz) rviz=true ;; esac
+    done
+    echo "  Starting the house (first start can take a minute). Ctrl-C here stops it."
+    exec ros2 launch $PKG house.launch.py gui:=$gui rviz:=$rviz ;;
+  teleop)
+    clean_env
+    echo "  Click THIS terminal, then:  w/x faster/slower,  a/d turn,  s or space = STOP"
+    exec ros2 run turtlebot3_teleop teleop_keyboard ;;
+  rviz)
+    clean_env; need_build
+    exec ros2 run rviz2 rviz2 -d "$EE414_WS/install/$PKG/share/$PKG/rviz/house_lab.rviz" \
+      --ros-args -p use_sim_time:=true ;;
+  run)
+    clean_env; need_build
+    [ $# -ge 1 ] || { echo "  usage: ./lab run <program> [arguments]"; exit 1; }
+    exec ros2 run $PKG "$@" ;;
+  monitor)
+    clean_env; need_build
+    exec ros2 run $PKG lab_monitor "$@" ;;
+  check)
+    clean_env
+    n="${1:-}"
+    [[ "$n" =~ ^[123]$ ]] || { echo "  usage: ./lab check 1   (or 2, or 3)"; exit 1; }
+    cd "$LAB_DIR" || exit 1
+    echo "  Checking your Lab $n code (no simulator needed) ..."
+    echo
+    if python3 tests/run_checks.py "$n"; then
+      echo; echo "  ALL LAB $n CHECKS PASS. Now try it in the simulator."
+    else
+      echo; echo "  Not yet. Fix the first FAIL line, then run ./lab check $n again."
+    fi ;;
+  build)
+    clean_env
+    mkdir -p "$EE414_WS/src"
+    [ -e "$EE414_WS/src/ee414_tb3_house_lab" ] || ln -s "$LAB_DIR" "$EE414_WS/src/ee414_tb3_house_lab"
+    cd "$EE414_WS" && colcon build --symlink-install --packages-select $PKG ;;
+  stop)
+    pkill -INT -f '[r]os2 launch ee414_house_lab' ; sleep 2
+    pkill -f '[g]z sim' ; pkill -f '[p]arameter_bridge' ; pkill -f '[r]obot_state_publisher'
+    pkill -f '[e]e414_house_lab/lib/ee414_house_lab' ; pkill -f '[t]eleop_keyboard' ; pkill -f '[r]viz2'
+    echo "  stopped." ;;
+  doctor)
+    exec "$LAB_DIR/check_setup.sh" "$@" ;;
+  submit)
+    exec "$LAB_DIR/scripts/submit.sh" "$@" ;;
+  help|-h|--help) usage ;;
+  *) echo "  unknown command: $cmd"; usage; exit 1 ;;
+esac

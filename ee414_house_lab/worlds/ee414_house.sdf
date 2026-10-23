@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<!--
+  EE 414 lab world: the official TurtleBot3 House, plus four things.
+
+    1. The FRONT DOOR is closed. The official robot spawns outside the house,
+       where nothing stops a wandering robot from driving away for ever.
+    2. Three coloured CYLINDERS (radius 0.12 m) for Lab 2, at known positions.
+    3. One BOX in the living room, the obstacle for the Bug algorithm in Lab 3.
+    4. The ground and the sun are written here, not downloaded from the
+       internet, so the world starts in a lab with no internet.
+
+  Every position below is also written in ee414_house_lab/world_info.py.
+  If you move something here, change it there too.
+-->
+<sdf version="1.8">
+  <world name="default">
+    <scene>
+      <shadows>0</shadows>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.8 0.85 0.9 1</background>
+    </scene>
+
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="turtlebot3_house">
+      <static>1</static>
+      <include>
+        <uri>model://turtlebot3_house</uri>
+      </include>
+    </model>
+
+    <!-- 1. The front door, closed. -->
+    <model name="front_door">
+      <static>true</static>
+      <pose>1.10 -0.15 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.10 0.15 1.0</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>1.10 0.15 1.0</size></box></geometry>
+          <material><ambient>0.45 0.3 0.15 1</ambient><diffuse>0.45 0.3 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- 2. The Lab 2 cylinders. Radius 0.12 m, height 0.5 m. -->
+    <model name="cylinder_red">
+      <static>true</static>
+      <pose>-3.00 3.60 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.12</radius><length>0.5</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.12</radius><length>0.5</length></cylinder></geometry>
+          <material><ambient>0.9 0.1 0.1 1</ambient><diffuse>0.9 0.1 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="cylinder_green">
+      <static>true</static>
+      <pose>-1.00 2.00 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.12</radius><length>0.5</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.12</radius><length>0.5</length></cylinder></geometry>
+          <material><ambient>0.1 0.7 0.1 1</ambient><diffuse>0.1 0.7 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="cylinder_blue">
+      <static>true</static>
+      <pose>-4.30 2.40 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.12</radius><length>0.5</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.12</radius><length>0.5</length></cylinder></geometry>
+          <material><ambient>0.1 0.2 0.9 1</ambient><diffuse>0.1 0.2 0.9 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- 3. The Lab 3 obstacle: a box that blocks the straight path to the goal. -->
+    <model name="bug_box">
+      <static>true</static>
+      <pose>-2.40 0.45 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.40 1.00 0.5</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.40 1.00 0.5</size></box></geometry>
+          <material><ambient>0.95 0.6 0.1 1</ambient><diffuse>0.95 0.6 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>
