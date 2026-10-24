@@ -20,6 +20,10 @@ explained in comments, so you can read it.
 **Start with the video guide** (12 minutes). It shows the whole lab once, with real runs:
 [English](https://youtu.be/_6a2EU7Mmn8) · [Arabic / بالعربي](https://youtu.be/GZesS9U1vdE)
 
+Then watch the **live demos** (5 minutes): real Gazebo recordings of what your robot should do in
+each lab. No code, only the behaviour and the measured numbers:
+[English](https://youtu.be/RKZsvj5rW00) · [Arabic / بالعربي](https://youtu.be/I4i_-eZtP5Q)
+
 ---
 
 ## 1. Install (once, 10–40 minutes)
